@@ -1,0 +1,16 @@
+{
+  "posthoc": true,
+  "target": "aggregate_cpu_utilization",
+  "n_holdout": 24,
+  "rmse": 0.18478539074333672,
+  "mae": 0.14678245915042334,
+  "bias": 0.1044315580662661,
+  "holdout_mean_actual": 9.268987733051413,
+  "holdout_mean_predicted": 9.164556174985147,
+  "holdout_min": 8.983613452960672,
+  "holdout_max": 9.63599020869164,
+  "train_mean": 9.414089019539007,
+  "train_mean_last_24": 9.249522346265591,
+  "peak_threshold_train_pp": 9.668361517488389,
+  "lag24_autocorrelation_train": -0.026381275989692133
+}

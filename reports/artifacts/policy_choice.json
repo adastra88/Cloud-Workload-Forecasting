@@ -1,0 +1,19 @@
+{
+  "target": "aggregate_cpu_utilization",
+  "model": "persistence",
+  "c_under": 8.0,
+  "c_over": 1.0,
+  "newsvendor_level": 0.8888888888888888,
+  "chosen_level": 0.6,
+  "interval_method": "empirical",
+  "widen_factor": 3.0,
+  "peak_threshold_train_pp": 9.668361517488389,
+  "bench_width_median_abs_diff_pp": 0.10317268365704457,
+  "peak_risk_on_holdout_band": {
+    "max_probability_of_peak": 0.11179867013930589,
+    "steps_with_peak_probability_above_threshold": 0,
+    "band_unusually_wide": true,
+    "action": "hold extra headroom"
+  },
+  "note": "Level and margin chosen on rolling-origin folds inside the training window; the holdout is scored once by scripts/final_score.py."
+}

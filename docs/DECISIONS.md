@@ -134,3 +134,78 @@ There is no daily or weekly cycle to estimate — lag-24 autocorrelation is
 −0.02, inside the 95% band — and any imposed period would be fitted to noise.
 The ACF falls inside the band by lag 11 (~55 min), so even an hourly period is
 weakly supported. We log the diagnostic and move on.
+
+
+## D012 - Rolling-origin folds: 5 origins, expanding window (2026-10-26, Phase 3)
+
+**Decision.** Evaluate every candidate on origins `[60, 66, 72, 78, 84]` with an
+expanding training window, horizon 24, plus a single dev-holdout fold at origin
+85 that mirrors the final 1-step-of-24 protocol.
+
+**Alternatives rejected.** (a) A single train/test split - one fold cannot give a
+standard error, and we would be tuning on the same data we report. (b) A sliding
+(windowed) scheme - 110 points are too few to truncate further. (c) Many more
+origins (step 1) - folds would overlap almost completely, inflating confidence
+without adding information.
+
+**Why it matters.** These 5 folds are the ONLY basis for model selection.
+Everything downstream (predict, intervals, policy) uses them, so the holdout is
+never touched before R7.
+
+## D013 - Selected persistence for both targets (2026-10-26, Phase 5)
+
+**Decision.** `config/final_model.json` freezes `persistence` for
+`active_vm_count` and `aggregate_cpu_utilization`.
+
+**Evidence.** Training-fold RMSE on `aggregate_cpu_utilization`: persistence
+0.2123 (SE 0.0425), gbm_direct 0.2209, drift 0.2396, ma24 0.2927,
+ets_damped 0.2842, ridge 0.2884-0.2953. Persistence, drift and gbm are inside
+one standard error; the pre-registered rule breaks the tie toward simplicity.
+
+**Alternatives rejected.** Ridge on lag features (alpha tuned 0.1-1000, best
+0.2615 - worse than persistence even with the best alpha, and the sweep is
+reported so a reviewer can check). GBM (arguably tied, but harder to explain and
+not better than the tie-break threshold).
+
+## D014 - Widen the empirical band by 3x (2026-10-26, Phase 7)
+
+**Decision.** `widen_factor = 3.0` on the rolling-origin residual quantiles,
+method `empirical`.
+
+**Evidence.** Raw empirical quantiles from 5 origins x 24 steps achieved only
+0.558-0.583 leave-one-origin-out coverage at every nominal level, far below
+nominal. Widening by 3.0 lifts measured coverage to 0.933. The candidate factors
+1.0/1.25/1.5/2.0/2.5/3.0/4.0 are all in
+`reports/artifacts/interval_calibration.csv` so the choice is auditable.
+
+**Honest caveat.** Five origins is a tiny calibration sample. The 3x factor is
+fitted on the same folds used for selection, so coverage optimism is possible;
+the holdout measured 0.917 at nominal 0.90, which is consistent but not proof.
+
+## D015 - The baseline beat the submission on the holdout (2026-10-26, Phase 6)
+
+**Decision.** Report the holdout result as-is. Do not retune, do not re-select,
+do not re-freeze.
+
+**What happened.** On the training folds persistence was best (0.2123 vs ma24
+0.2927). On the one-shot holdout persistence scored RMSE 0.1848 / MASE 1.2119
+while `ma24` scored 0.1537 / 0.9652 - a skill score of -0.2024 for the
+submission.
+
+**Why we do not "fix" it.** R7 forbids changing the model after scoring. The
+underlying cause is real and worth stating: five overlapping folds give ~13
+correlated evaluations, the SE (0.0425) is larger than the gap between most
+candidates, and a 24-step smoothing average happened to sit closer to the
+holdout's mild upward drift (holdout mean 9.269 vs train-last-24 mean 9.250 vs
+training mean 9.414). This is the honest lesson of the exercise, and it is what
+the report leads with.
+
+## D016 - Interval coverage measured post-hoc, not used to re-fit (2026-10-26, Phase 6)
+
+**Decision.** Measure holdout interval coverage once, label it post-hoc, and
+leave the widening factor untouched.
+
+**Evidence.** `reports/artifacts/posthoc_interval_coverage.csv`: nominal
+0.50/0.80/0.90/0.95 -> measured 0.833/0.833/0.917/0.917. All misses are above
+the band (0 below), i.e. the band is slightly high-biased, consistent with the
++0.104 point bias.

@@ -1,0 +1,19 @@
+{
+  "n_train": 110,
+  "step_seconds": 300.0,
+  "folds": [
+    60,
+    66,
+    72,
+    78,
+    84
+  ],
+  "horizon": 24,
+  "min_train": 60,
+  "step": 6,
+  "selected": {
+    "active_vm_count": "persistence",
+    "aggregate_cpu_utilization": "persistence"
+  },
+  "seed": 0
+}

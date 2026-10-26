@@ -1,0 +1,19 @@
+{
+  "data_dir": "challenge_data",
+  "n_series_observations": 134,
+  "n_training_observations": 110,
+  "holdout_len": 24,
+  "step_seconds": 300.0,
+  "n_vms": 10000,
+  "models": {
+    "active_vm_count": {
+      "model": "persistence",
+      "n_train": 110
+    },
+    "aggregate_cpu_utilization": {
+      "model": "persistence",
+      "n_train": 110
+    }
+  },
+  "fallbacks": []
+}

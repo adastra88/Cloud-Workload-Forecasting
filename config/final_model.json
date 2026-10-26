@@ -1,0 +1,85 @@
+{
+  "targets": {
+    "active_vm_count": {
+      "model": "persistence",
+      "rmse_mean_per_origin": 0.0,
+      "mae": 0.0,
+      "mase": null,
+      "n_folds": 5
+    },
+    "aggregate_cpu_utilization": {
+      "model": "persistence",
+      "rmse_mean_per_origin": 0.2122962228476652,
+      "mae": 0.18500187108310526,
+      "mase": 1.4676851832585254,
+      "n_folds": 5
+    }
+  },
+  "selection": {
+    "active_vm_count": {
+      "lowest_rmse_candidate": "persistence",
+      "lowest_rmse": 0.0,
+      "se_of_best": 0.0,
+      "tied_candidates": [
+        "persistence",
+        "ma6",
+        "ma12",
+        "ma24",
+        "drift",
+        "ets_holt",
+        "ets_damped",
+        "ridge_direct",
+        "gbm_direct"
+      ],
+      "loyo_coverage": {
+        "0.5": 1.0,
+        "0.8": 1.0,
+        "0.9": 1.0,
+        "0.95": 1.0
+      },
+      "dev_holdout": {
+        "origin": 85,
+        "rmse": 0.0,
+        "mae": 0.0
+      }
+    },
+    "aggregate_cpu_utilization": {
+      "lowest_rmse_candidate": "persistence",
+      "lowest_rmse": 0.2122962228476652,
+      "se_of_best": 0.042543348591124255,
+      "tied_candidates": [
+        "persistence",
+        "drift",
+        "gbm_direct"
+      ],
+      "loyo_coverage": {
+        "0.5": 0.5583333333333333,
+        "0.8": 0.5583333333333333,
+        "0.9": 0.5833333333333334,
+        "0.95": 0.5833333333333334
+      },
+      "dev_holdout": {
+        "origin": 85,
+        "rmse": 0.15422831245835641,
+        "mae": 0.13242942454439147
+      }
+    }
+  },
+  "levels": [
+    0.05,
+    0.1,
+    0.5,
+    0.9,
+    0.95
+  ],
+  "folds": [
+    60,
+    66,
+    72,
+    78,
+    84
+  ],
+  "ridge_alpha": 10.0,
+  "seed": 0,
+  "note": "Frozen output of scripts/select_model.py. The predict command refits the named configuration on the training window of whatever data it is given."
+}

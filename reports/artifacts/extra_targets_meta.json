@@ -1,0 +1,5 @@
+{
+  "hot_threshold_pp": 19.691118594608653,
+  "threshold_quantile": 0.9,
+  "threshold_source": "training-window readings only (all VMs, avg_cpu > 0)"
+}
