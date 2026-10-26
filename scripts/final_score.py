@@ -36,6 +36,21 @@ ART = ROOT / "reports" / "artifacts"
 CONFIG = ROOT / "config" / "final_model.json"
 
 
+def load_holdout_truth(data_dir: Path, holdout_len: int = 24) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Load the holdout target values and the training window.
+
+    This is deliberately the only function in the project that returns holdout
+    values.  ``tests/test_leakage.py`` parses the source tree and fails if any
+    other module references it.
+    """
+    dataset = load_dataset(data_dir)
+    series = build_targets(dataset.readings)
+    split = chronological_split(series, holdout_len=holdout_len, train_len=None)
+    truth = split.holdout[["timestamp", *TARGETS]].reset_index(drop=True)
+    train = split.train[["timestamp", *TARGETS]].reset_index(drop=True)
+    return truth, train
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", default="challenge_data")
@@ -47,11 +62,7 @@ def main(argv=None) -> int:
     ART.mkdir(parents=True, exist_ok=True)
 
     # ---- the single read of holdout truth -------------------------------- #
-    dataset = load_dataset(Path(args.data))
-    series = build_targets(dataset.readings)
-    split = chronological_split(series, holdout_len=args.holdout_len, train_len=None)
-    truth = split.holdout[["timestamp", *TARGETS]].reset_index(drop=True)
-    train = split.train[["timestamp", *TARGETS]].reset_index(drop=True)
+    truth, train = load_holdout_truth(Path(args.data), args.holdout_len)
     # --------------------------------------------------------------------- #
 
     preds = pd.read_csv(args.predictions)
