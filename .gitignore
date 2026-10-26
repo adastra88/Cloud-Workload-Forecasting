@@ -1,0 +1,31 @@
+# Upstream challenge data (never committed, never copied)
+challenge_data/
+data-v1.tar.gz
+*.tar.gz
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Large / derived artifacts
+*.parquet
+*.feather
+cache/
+tmp/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
