@@ -1,0 +1,7 @@
+stat,value
+n_vms,10000.0
+median_lifetime_days,29.993055555555557
+p10_lifetime_days,8.747222222222227
+p90_lifetime_days,29.993055555555557
+pct_created_by_train_end,100.0
+pct_deleted_within_trace_window,0.0

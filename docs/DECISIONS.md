@@ -94,3 +94,43 @@ them.
 a complete grid, which implies every VM is present at every timestamp. This is a
 property of the *curated release*, not of the underlying fleet — an important
 caveat to state in the report rather than paper over.
+
+## D009 — Pin Python 3.12 + pandas 2.2.x (2026-10-26, Phase 0/1)
+
+**Decision.** Build the environment on CPython 3.12 with `pandas>=2.2,<2.3`.
+
+**Alternatives and why rejected.** The first venv was Python 3.14 with pandas
+3.1.0 (a dev build). In that wheel `DataFrame.merge()` returns a *tuple*
+instead of a DataFrame, which silently broke the EDA joins with a confusing
+`KeyError: 'vm_id'`. Python 3.14 has no pandas 2.2 wheel, and building it needs
+an MSVC toolchain we do not need for this task. Downgrading the interpreter is
+cheaper and closer to what a reviewer will run.
+
+**Consequence.** The README pins `python>=3.10,<3.14`-compatible versions and the
+`Makefile setup` target creates the venv with a pinned interpreter.
+
+## D010 — `active_vm_count` confirmed constant; forecast by persistence (2026-10-26, Phase 1)
+
+**Decision.** Do not model `active_vm_count`. Use the last observed value as the
+forecast for all 24 steps, with a documented constant fallback for degenerate
+inputs.
+
+**Evidence.** Over the 110 training timestamps the count is exactly 10,000 at
+every one, and 0% of VMs are deleted inside the window
+(`reports/artifacts/target_summary_train.csv`, `churn_by_category.csv`).
+
+**Honesty note.** This is a property of the curated release, not of Azure. The
+interesting question — for how long does a VM stay alive, how do arrivals and
+departures move the count — cannot be answered with a complete rectangular
+slice. We say so instead of inventing a model. The code path still handles
+varying counts (smoke datasets + tests), because a reviewer may swap one in.
+
+## D011 — No seasonal component in any candidate (2026-10-26, Phase 1)
+
+**Decision.** `seasonal_naive` is evaluated only as a diagnostic, never selected.
+
+**Evidence.** The training window is 9.2 h (110 points on a 5-minute grid).
+There is no daily or weekly cycle to estimate — lag-24 autocorrelation is
+−0.02, inside the 95% band — and any imposed period would be fitted to noise.
+The ACF falls inside the band by lag 11 (~55 min), so even an hourly period is
+weakly supported. We log the diagnostic and move on.

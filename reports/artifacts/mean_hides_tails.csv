@@ -1,0 +1,2 @@
+mean_of_aggregate_mean,mean_of_cross_vm_p95,mean_of_cross_vm_p99,mean_of_cross_vm_max,ratio_p95_to_mean,mean_share_vms_above_80pct,mean_share_vms_above_90pct
+9.414089019539007,37.54702406593235,87.26833193490465,99.29512123236347,3.9883863417908243,1.2720909090909087,0.8783636363636365

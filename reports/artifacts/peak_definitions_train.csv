@@ -1,0 +1,2 @@
+peak_threshold_pp_top_decile,upper_quartile_threshold_pp,n_peak_timestamps_train,pct_time_at_peak,pct_time_low_demand_bottom_decile,peak_hours_of_day_distinct,note
+9.668361517488389,9.507673290365222,11,10.0,10.0,2,"11 hours of data: 'peak periods' are descriptive within the window, not a daily cycle"

@@ -1,0 +1,2 @@
+std_aggregate_change_pp,std_within_vm_change_component_pp,corr_aggregate_with_within_component,mean_abs_aggregate_change_pp,mean_abs_within_component_change_pp,note
+0.15803270128414898,0.15803270128414515,0.9999999999999998,0.12111707563588989,0.12111707563588976,"the between-VM term sums to zero inside each timestamp when every VM is present, so aggregate movement in this release is 100% within-VM load change; composition effects can only enter through membership changes"

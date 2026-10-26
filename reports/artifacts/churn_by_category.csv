@@ -1,0 +1,4 @@
+group,n_vms,created_by_train_end,deleted_by_train_end,pct_created_by_train_end,pct_deleted_by_train_end
+Delay-insensitive,6180,6180,0,100.0,0.0
+Interactive,3091,3091,0,100.0,0.0
+Unknown,729,729,0,100.0,0.0

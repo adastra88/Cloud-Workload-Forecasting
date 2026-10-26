@@ -1,0 +1,9 @@
+{
+  "step_seconds": 300,
+  "n_train": 110,
+  "n_holdout": 24,
+  "train_end_timestamp": 32700,
+  "n_vms": 10000,
+  "n_timestamps_total": 134,
+  "n_rows": 1340000
+}

@@ -1,0 +1,12 @@
+check,value
+rows,1340000.0
+distinct_vms,10000.0
+distinct_timestamps,134.0
+modal_step_seconds,300.0
+non_modal_steps,0.0
+duplicate_vm_timestamp,0.0
+null_cells,0.0
+invalid_avg_cpu_rows,0.0
+min_cpu_gt_max_cpu_rows,0.0
+min_readings_per_vm,134.0
+max_readings_per_vm,134.0
