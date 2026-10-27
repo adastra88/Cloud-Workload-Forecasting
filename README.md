@@ -19,7 +19,8 @@ python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
 
-# 2. data -> challenge_data/  (verifies the release checksums)
+# 2. data -> challenge_data/  (downloads the release, verifies checksums).
+#    challenge_data/ is gitignored and never committed.
 python scripts/download_data.py
 
 # 3. the one command that produces the submission
@@ -28,8 +29,6 @@ python -m cwf.predict --data challenge_data --output predictions.csv
 # 4. check it against the published contract
 python scripts/validate_submission.py predictions.csv
 ```
-
-`challenge_data/` is gitignored and never committed.
 
 ## Reproducing everything
 
