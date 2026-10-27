@@ -6,11 +6,11 @@ that is close to handing the model the answer.  Rolling-origin evaluation always
 trains on the past and tests on the future, which is the only ordering that
 exists at deployment time.
 
-Fold construction (frozen in docs/protocol.md §5)::
+Fold construction (frozen in section 5 of docs/protocol.md)::
 
     origins = range(min_train, n - horizon + 1, step)
 
-so every fold satisfies ``origin + horizon <= n`` — asserted, not assumed.
+so every fold satisfies ``origin + horizon <= n``, asserted, not assumed.
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ import pandas as pd
 
 from . import metrics as M
 
-#: Frozen defaults from docs/protocol.md §5.
+#: Frozen defaults from section 5 of docs/protocol.md.
 DEFAULT_HORIZON = 24
 DEFAULT_MIN_TRAIN = 60
 DEFAULT_STEP = 6
@@ -53,7 +53,7 @@ def make_folds(
 ) -> list[Fold]:
     """Enumerate rolling-origin folds for a series of length ``n_obs``.
 
-    Returns an empty list when the series is too short — callers must fall back
+    Returns an empty list when the series is too short: callers must fall back
     to something honest rather than crash (smoke datasets do this).
     """
     if horizon <= 0 or step <= 0:

@@ -1,4 +1,4 @@
-# Cloud-workload forecasting
+# Cloud workload forecasting
 
 Forecast two aggregate signals 24 steps ahead (2 hours on a 5-minute grid) for a
 10,000-VM slice of the Microsoft Azure Public Dataset V2:
@@ -51,9 +51,10 @@ python scripts/validate_submission.py predictions.csv
 
 1. **Load** both files, keep `avg_cpu` that is finite and in [0, 100].
 2. **Build** the aggregate series at every timestamp in the file.
-3. **Split** — first 110 observations train, last 24 holdout. One function owns
-   this (`cwf.splits.chronological_split`). The predict path keeps the holdout
-   *timestamps* and discards the holdout *values* immediately.
+3. **Split** so the first 110 observations are train and the last 24 are
+   holdout. One function owns this (`cwf.splits.chronological_split`). The
+   predict path keeps the holdout *timestamps* and discards the holdout *values*
+   immediately.
 4. **Refit** the frozen configuration from `config/final_model.json` on the
    training window of whatever data is supplied.
 5. **Forecast** 24 steps and map them onto the inferred holdout timestamps.
@@ -68,17 +69,17 @@ crashing.
 
 - **The baseline won, and the report says so.** Rolling-origin validation chose
   persistence for both targets. On the one-shot holdout, a 24-step moving
-  average scored better on aggregate CPU (RMSE 0.1537 vs 0.1848). The
-  pre-registered rule was followed anyway; retuning after seeing the holdout
-  would have invalidated the exercise.
+  average scored better on aggregate CPU (RMSE 0.1537 vs 0.1848). I followed the
+  pre-registered rule anyway; retuning after seeing the holdout would have
+  invalidated the exercise.
 - `active_vm_count` is exactly constant over the supplied window, so it is
   forecast by persistence and scale-free metrics are reported as undefined.
   The code still handles varying counts (see `cwf/smoke.py` and the tests).
 - No seasonal model: 9.2 h of training data cannot identify a daily or weekly
   cycle.
 - Metadata lifetime statistics (`max_cpu`, `avg_cpu`, `p95_max_cpu`) and
-  `timestamp_vm_deleted` are banned as features — they encode the future. See
-  `docs/feature_audit.md`.
+  `timestamp_vm_deleted` are banned as features because they encode the future.
+  See `docs/feature_audit.md`.
 
 ## Leakage controls
 
@@ -99,14 +100,13 @@ scripts/        download_data, run_eda, run_validation, select_model,
 config/         final_model.json (frozen selection output)
 notebooks/      thin walkthroughs that import from src
 reports/        final_report.md, figures/, artifacts/
-docs/           protocol, feature audit, decisions, journal, interview prep
+docs/           protocol, feature audit, decisions, journal, handoff note
 tests/          pytest suite
 ```
 
 ## Documentation
 
-- `reports/final_report.md` — the write-up.
-- `docs/HANDOFF_SUMMARY.md` — plain-English summary of the whole effort.
-- `docs/interview/` — study guide and Q&A bank.
-- `docs/DECISIONS.md` — every non-trivial decision with alternatives.
-- `docs/journal/` — short phase-by-phase notes.
+- `reports/final_report.md` - the write-up.
+- `docs/HANDOFF_SUMMARY.md` - plain-English summary of the whole effort.
+- `docs/DECISIONS.md` - every non-trivial decision with alternatives.
+- `docs/journal/` - short phase-by-phase notes.

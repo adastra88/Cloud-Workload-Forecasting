@@ -5,14 +5,14 @@
 What it does, end to end:
 
 1. Load ``vm_cpu_readings`` from ``--data`` (metadata is optional and is never a
-   model feature — see ``docs/feature_audit.md``).
+   model feature: see ``docs/feature_audit.md``).
 2. Build the full aggregate target series with ``cwf.targets.build_targets``.
 3. Split once with ``cwf.splits.chronological_split``.  **The holdout values are
    dropped here.**  Only the ``holdout_len`` timestamps survive, as the output
    index (R1).  Consequently the output cannot depend on holdout readings: the
    holdout-corruption invariance test (R9) passes by construction.
 4. Fit the model named in ``config/final_model.json`` on the training window of
-   whatever data was supplied — it refits, it does not replay stored numbers, so
+   whatever data was supplied: it refits, it does not replay stored numbers, so
    a tiny smoke dataset produces a valid file from its own data.
 5. Forecast ``holdout_len`` steps, clip to the contract ranges, and write
    exactly three columns.

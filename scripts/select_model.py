@@ -1,7 +1,7 @@
 """Phase 5: apply the pre-registered selection rule and freeze the model config.
 
 Reads the rolling-origin results produced by ``run_validation.py`` (or recomputes
-them), applies the 1-SE simplicity rule from docs/protocol.md §7, writes
+them), applies the 1-SE simplicity rule from section 7 of docs/protocol.md, writes
 ``config/final_model.json``, and saves the residual quantiles used for the
 prediction intervals.
 

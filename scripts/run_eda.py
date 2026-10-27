@@ -1,4 +1,4 @@
-"""Phase 1 EDA — training-window only for anything pattern-related.
+"""Phase 1 EDA: training-window only for anything pattern-related.
 
 Leakage discipline (protocol R3)
 --------------------------------
@@ -354,7 +354,7 @@ def fig_series(series, split) -> None:
     plt.plot(tr["timestamp"] / 3600.0, tr["aggregate_cpu_utilization"], lw=1.0, color="#1f4e79")
     plt.axvline(tr["timestamp"].iloc[-1] / 3600.0, color="grey", ls="--", lw=0.8)
     plt.xlabel("hours since trace start"); plt.ylabel("aggregate CPU (%)")
-    plt.title("Aggregate CPU utilisation — training window only (holdout not shown)")
+    plt.title("Aggregate CPU utilisation: training window only (holdout not shown)")
     fig("fig01_aggregate_cpu_train.png")
 
 
@@ -394,7 +394,7 @@ def section_distributions() -> None:
     plt.figure(figsize=(8, 3.0))
     plt.hist(per_vm["mean"], bins=60, color="#2e75b6")
     plt.xlabel("VM mean CPU over training window (%)"); plt.ylabel("VMs")
-    plt.title("Per-VM mean utilisation — right-skewed, most VMs near idle")
+    plt.title("Per-VM mean utilisation: right-skewed, most VMs near idle")
     fig("fig02_vm_mean_hist.png")
 
     top_share = []
@@ -408,7 +408,7 @@ def section_distributions() -> None:
 
 
 def section_segments(dataset) -> None:
-    print("\n[5] SEGMENTS (training readings, recomputed — metadata lifetime stats NOT used)")
+    print("\n[5] SEGMENTS (training readings, recomputed. Metadata lifetime stats NOT used)")
     meta = dataset.metadata
     if meta is None:
         print("   metadata absent: skipped")
@@ -511,7 +511,7 @@ def main(argv=None) -> int:
     TRAIN_END = split.train_end_timestamp
 
     print("=" * 78)
-    print("PHASE 1 EDA — training-window only for all pattern-finding analysis")
+    print("PHASE 1 EDA: training-window only for all pattern-finding analysis")
     print(f"training window: timestamps {split.train['timestamp'].iloc[0]} .. {TRAIN_END} "
           f"({len(split.train)} obs, {hours(step, len(split.train)):.2f} h)")
     print(f"cadence (inferred): {step:.0f} s   holdout: {len(split.holdout)} obs "

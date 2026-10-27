@@ -84,7 +84,7 @@ def main(argv: list[str] | None = None) -> int:
     table = write_sha256_verification(dest, ROOT / "reports" / "artifacts" / "data_checksums.csv")
     print(table.to_string(index=False))
     ok = bool(len(table)) and bool(table["ok"].all())
-    print("SHA256SUMS: " + ("ALL OK" if ok else "MISMATCH — do not proceed"))
+    print("SHA256SUMS: " + ("ALL OK" if ok else "MISMATCH: do not proceed"))
     return 0 if ok else 3
 
 

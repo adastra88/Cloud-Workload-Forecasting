@@ -168,7 +168,7 @@ def gbm_direct(max_depth: int = 2, learning_rate: float = 0.05, max_iter: int = 
 
 
 def candidate_models(alpha: float = 10.0) -> dict:
-    """The frozen candidate set from docs/protocol.md §6 (models only)."""
+    """The frozen candidate set from section 6 of docs/protocol.md (models only)."""
     return {
         "ets_holt": ETSModel(damped=False),
         "ets_damped": ETSModel(damped=True),

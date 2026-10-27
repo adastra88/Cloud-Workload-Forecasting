@@ -1,6 +1,6 @@
 # Forecasting protocol (frozen before any model was evaluated)
 
-Status: **FROZEN** at commit of Phase 0. Everything below was fixed *before* a
+Status: **FROZEN** at the Phase 0 commit. Everything below was fixed *before* a
 single candidate model was run on the data. Later edits are appended to
 `docs/DECISIONS.md` and never silently change this file. If any rule had to
 change, the change is logged with its date and reason.
@@ -41,7 +41,7 @@ descriptive analysis and in the optional `aggregate_max_cpu` extra target.
   ordered series.
 
 Optional **extra** targets (clearly labelled "extras" wherever used):
-`share_hot_vms` (fraction of active VMs with `avg_cpu >= threshold`),
+`share_hot_vms` (fraction of active VMs with `avg_cpu` >= threshold),
 `cross_vm_p95_avg_cpu`, `aggregate_max_cpu`. The high-CPU `threshold` is fixed
 from the **training window only** (90th percentile of training-window VM-level
 `avg_cpu` readings).
@@ -52,7 +52,7 @@ One function: `cwf.splits.chronological_split`.
 
 * Full aggregate series built first, then split.
 * `holdout_len = 24` (CLI default).
-* `train_len = 110` (CLI default) — the training window is the last 110
+* `train_len = 110` (CLI default): the training window is the last 110
   observations before the holdout. If the series is too short, the window
   shrinks; if there is not enough history for the chosen model the predictor
   falls back to a baseline and logs a warning.
@@ -90,13 +90,13 @@ future and asserts the past features are unchanged.
 * Constraint: `origin_index + 24 <= 110`. Origins are enumerated
   programmatically as `range(min_train, n - horizon + 1, step)` with
   `min_train = 60`; on 110 observations that yields origins
-  `{60, 66, 72, 78, 84}` → **5 origins**, with expanding training windows of
-  60–84 observations. The exact indices are saved to
+  `{60, 66, 72, 78, 84}`, i.e. **5 origins**, with expanding training windows of
+  60-84 observations. The exact indices are saved to
   `reports/artifacts/validation_folds.csv`.
-* Minimum training length: `60` observations (5 hours). Documented rationale:
-  60 points give at least two "days" of nothing but enough samples for a
-  damped-trend optimiser and the 12-lag ridge features to be estimable.
-* Every candidate — baselines included — goes through the identical harness.
+* Minimum training length: `60` observations (5 hours). Rationale: 60 points
+  allow the damped-trend optimiser and the 12-lag ridge features to be
+  estimated without the fit being dominated by a handful of observations.
+* Every candidate, baselines included, goes through the identical harness.
 
 **"Dev holdout" fold** (mirrors the final protocol once): train on indices
 `0..85`, evaluate on the last 24 of the 110 (indices `86..109`). Used only as a
@@ -104,10 +104,10 @@ consistency check; the rolling-origin mean is the selection criterion.
 
 **Metrics** per target, per origin and aggregated:
 
-* MAE, RMSE (primary: RMSE, in the target's own units — percentage points for
+* MAE, RMSE (primary: RMSE, in the target's own units: percentage points for
   utilisation, VMs for the count).
 * MASE, scaled by the **in-sample** naive (one-step) MAE of the training window
-  of that origin — computed from training data only.
+  of that origin, computed from training data only.
 * Skill score `1 - MSE_model / MSE_baseline` against the best baseline.
 * Per-horizon error curve (24 values) and per-origin spread.
 
@@ -121,18 +121,18 @@ Per target:
 
 | id | family | key hyper-parameters |
 |----|--------|----------------------|
-| `persistence` | baseline | — |
-| `ma6`, `ma12`, `ma24` | baseline | window ∈ {6, 12, 24} |
-| `drift` | baseline | — |
+| `persistence` | baseline | - |
+| `ma6`, `ma12`, `ma24` | baseline | window in {6, 12, 24} |
+| `drift` | baseline | - |
 | `seasonal_naive` | baseline | season = 24 **only if** Phase-1 autocorrelation justifies it; decided inside the training window and recorded |
 | `ets_damped` | statistical | additive error, additive damped trend, no seasonality; optimised by MLE |
 | `ets_holt` | statistical | additive error, additive trend (no damping) |
 | `ridge_direct` | linear ML | direct multi-horizon, one model per horizon step pooled across origins; features = origin-safe lags/rolling stats/growth; heavy L2; single fixed `alpha` grid chosen on the dev-holdout fold only |
-| `gbm_direct` | boosting | direct multi-horizon; `HistGradientBoostingRegressor`, depth ≤ 3, small learning rate, early stopping off with fixed small trees |
+| `gbm_direct` | boosting | direct multi-horizon; `HistGradientBoostingRegressor`, depth <= 3, small learning rate, early stopping off with fixed small trees |
 
 Rejected up front: LSTM/Transformer (110 training points; no defensible reason),
 recursive ML (error accumulation with no evidence it helps), calendar features
-(11 hours of data cannot identify daily or weekly cycles — tested honestly and
+(11 hours of data cannot identify daily or weekly cycles; tested honestly and
 reported even if they look "significant" by chance), per-VM global model
 (possible stretch goal, only after everything else is done).
 
@@ -142,7 +142,7 @@ reported even if they look "significant" by chance), per-VM global model
 2. Pick the candidate with the **lowest mean RMSE** per target.
 3. **One-standard-error (1-SE) simplicity rule**: across origins compute the
    standard error of the per-origin RMSE. Any candidate whose mean RMSE is within
-   `1 × SE_of_best` of the best is considered statistically indistinguishable;
+   `1 x SE_of_best` of the best is considered statistically indistinguishable;
    among those, pick the **simplest** by this fixed order:
    `persistence < ma6 < ma12 < ma24 < drift < seasonal_naive < ets_holt <
    ets_damped < ridge_direct < gbm_direct`.
@@ -151,14 +151,15 @@ reported even if they look "significant" by chance), per-VM global model
    metrics that justified it) and then frozen.
 6. The holdout is touched **once** afterwards, by `scripts/final_score.py`.
 
-Rationale: with ~5 overlapping origins the evidence is noisy; always preferring
-the complex model on a tie would be a form of overfitting to the validation set.
+Rationale: with about 5 overlapping origins the evidence is noisy; always
+preferring the complex model on a tie would be a form of overfitting to the
+validation set.
 
 ## 8. Prediction intervals
 
 Empirical residual quantiles by horizon step, from the same rolling-origin
 residuals used for selection (quantiles 0.05/0.10/0.50/0.90/0.95), with a
-`predicted ± q` construction on the selected model. Bands are written to
+`predicted +/- q` construction on the selected model. Bands are written to
 `reports/artifacts/forecast_intervals.csv`, never into `predictions.csv`
 (schema allows three columns only). Coverage is measured on the rolling-origin
 folds; one-shot holdout coverage is reported post-hoc.
@@ -170,15 +171,15 @@ quantile derived from `c_under / c_over` (classic newsvendor ratio
 `q = c_under / (c_under + c_over)`); the quantile level is chosen on
 rolling-origin folds, then evaluated **once** on the holdout.
 `c_under = 8` (cost of one VM-share of shortfall), `c_over = 1`; sensitivity
-table over `c_under/c_over ∈ {1, 2, 4, 8, 16, 32}`.
+table over `c_under/c_over` in {1, 2, 4, 8, 16, 32}.
 A peak-risk trigger warns when `P(utilisation > train peak threshold) > 0.25` or
-the band width exceeds 2× the training-window median absolute one-step change.
-"The mean is not the tail" — the policy is evaluated on the aggregate mean, and
-the hot-VM extra target is used to explain why a mean-based rule under-protects.
+the band width exceeds 2x the training-window median absolute one-step change.
+The mean is not the tail: the policy is evaluated on the aggregate mean, and the
+hot-VM extra target is used to explain why a mean-based rule under-protects.
 
 ## 10. Reproducibility
 
-Python ≥ 3.10, versions pinned in `pyproject.toml` lower bounds and recorded in
+Python >= 3.10, versions pinned in `pyproject.toml` lower bounds and recorded in
 `reports/artifacts/environment.txt`. Fixed seeds (`SEED = 0`) everywhere a
 random number generator is used. Deterministic ordering (`sort_values` with
 stable mergesort). One command reproduces the submission:

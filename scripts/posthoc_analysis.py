@@ -3,7 +3,7 @@
 Everything in this script is labelled post-hoc: it runs *after* the one-shot
 scoring in ``scripts/final_score.py`` and it does **not** change the submitted
 model or ``predictions.csv``.  Its purpose is to explain what the model got
-wrong, not to fix it — fixing it would be retuning on the test set.
+wrong, not to fix it: fixing it would be retuning on the test set.
 
 Produces: errors by horizon, peak vs non-peak (threshold from train), errors by
 time of day of the window, worst timestamps, interval coverage under/over

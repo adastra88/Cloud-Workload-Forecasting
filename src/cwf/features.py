@@ -1,6 +1,6 @@
 """Origin-safe feature construction for the direct multi-horizon models.
 
-The causality contract (docs/protocol.md §4) is enforced structurally: every
+The causality contract (section 4 of docs/protocol.md) is enforced structurally: every
 public function takes the **context array** (values at or before the origin) and
 never the full series, so a feature cannot see the future even by mistake.  The
 property test in ``tests/test_features.py`` perturbs values after the origin and

@@ -8,9 +8,9 @@ At the 8:1 ratio the chosen 60th percentile of the band gives 12 shortfall steps
 out of 24 with mean over-provisioning of 0.048 pp. That sounds bad until you
 read the sensitivity table: at a 1:1 ratio the optimum moves to the 50th
 percentile and net cost halves, while at 32:1 the optimum climbs to the 85th
-percentile. There is no universally right margin - there is only the margin your
-cost structure implies. Saying that explicitly is more useful than quoting a
-single "safe" headroom.
+percentile. There is no universally right margin, only the margin the cost
+structure implies. Saying that explicitly is more useful than quoting a single
+"safe" headroom.
 
 Two things to be honest about. The band was widened 3x because raw residual
 quantiles under-covered badly; that factor is calibrated on five origins, so it

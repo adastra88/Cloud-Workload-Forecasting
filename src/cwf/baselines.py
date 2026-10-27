@@ -68,7 +68,7 @@ def seasonal_naive(period: int):
     return _forecast
 
 
-#: The frozen candidate list from docs/protocol.md §6.
+#: The frozen candidate list from section 6 of docs/protocol.md.
 BASELINES = {
     "persistence": persistence,
     "ma6": moving_average(6),

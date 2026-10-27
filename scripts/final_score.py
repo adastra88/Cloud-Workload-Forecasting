@@ -2,13 +2,13 @@
 
 Run exactly once, after ``predictions.csv`` and ``config/final_model.json`` are
 frozen.  Whatever number comes out is reported; nothing is retuned afterwards
-(R7).  Re-running it just re-scores the same frozen file, which is fine — what is
+(R7).  Re-running it just re-scores the same frozen file, which is fine: what is
 forbidden is changing the model in response.
 
 Reports, for both targets and with every baseline scored identically:
 MAE, RMSE, MASE (scale from the training window's in-sample naive error),
-skill score versus the best baseline, relative improvement, and — for the
-utilisation target — interval coverage and pinball loss on the band written by
+skill score versus the best baseline, relative improvement, and: for the
+utilisation target: interval coverage and pinball loss on the band written by
 the policy/interval step.
 """
 

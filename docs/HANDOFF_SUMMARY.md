@@ -1,7 +1,7 @@
 # Handoff summary
 
-Plain English. What was asked, what was built, what came out, and what you should
-check yourself before you submit.
+Plain English. What was asked, what was built, what came out, and what is still
+unverified.
 
 ---
 
@@ -10,14 +10,13 @@ check yourself before you submit.
 Forecast two things 24 steps ahead (two hours on a five-minute grid) from a
 10,000-VM slice of the Microsoft Azure Public Dataset V2:
 
-1. `active_vm_count` — how many VMs are reporting.
-2. `aggregate_cpu_utilization` — the mean CPU utilisation across them, in percent.
+1. `active_vm_count`: how many VMs are reporting.
+2. `aggregate_cpu_utilization`: the mean CPU utilisation across them, in percent.
 
 Deliver a reproducible repo with code, tests, notebooks, a README, a
-`predictions.csv`, a report, and — because you'll be interviewed about it — an
-interview-prep guide. The grading rubric weights data understanding 15, EDA 20,
-methodology 20, model quality 15, error analysis 15, engineering 10,
-communication 5. Note what that implies: **model quality is only 15%**. Honest
+`predictions.csv` and a report. The grading rubric weights data understanding
+15, EDA 20, methodology 20, model quality 15, error analysis 15, engineering 10,
+communication 5. What that implies: **model quality is only 15%**. Honest
 validation and clear reasoning carry most of the marks.
 
 ---
@@ -30,22 +29,22 @@ validation and clear reasoning carry most of the marks.
 - 61 tests, all passing.
 - Three notebooks that import from `src` and execute top to bottom.
 - `predictions.csv`, 24 rows, exactly three columns.
-- Documentation: report, this summary, interview guide, decision log,
-  per-phase journals, feature audit, pre-registered protocol.
+- Documentation: report, this summary, decision log, per-phase journals, feature
+  audit, pre-registered protocol.
 
 ---
 
 ## The data in ten bullets
 
-1. 1,340,000 rows: 10,000 VMs × 134 timestamps.
+1. 1,340,000 rows: 10,000 VMs x 134 timestamps.
 2. Timestamps are a perfect 300-second grid with no gaps and no duplicates.
 3. Zero nulls, zero out-of-range `avg_cpu`, zero duplicate keys.
 4. `min_cpu <= max_cpu` everywhere.
 5. One metadata row per VM.
 6. Training window: first 110 timestamps (9.17 hours). Holdout: last 24 (2 hours).
-7. `active_vm_count` is **exactly 10,000** at every timestamp — it never moves.
-8. `aggregate_cpu_utilization` has mean 9.41%, std 0.19%, range 9.11–9.99%.
-9. No trend (ADF p=0.41), no seasonality (lag-24 ACF −0.02), stationarity on the
+7. `active_vm_count` is **exactly 10,000** at every timestamp. It never moves.
+8. `aggregate_cpu_utilization` has mean 9.41%, std 0.19%, range 9.11-9.91%.
+9. No trend (ADF p=0.41), no seasonality (lag-24 ACF -0.02), stationarity on the
    boundary (KPSS p=0.10).
 10. 83.6% of variance is *which VM you look at*; only 0.018% is a common
     time-varying signal. The aggregate mean is 9.41% while the cross-VM P95 is
@@ -68,21 +67,21 @@ The rule chose **persistence** for both targets.
 ## Headline results, versus baseline
 
 `active_vm_count`: RMSE 0.0000 for the submission and for every baseline. MASE is
-undefined because the series doesn't move — dividing by a zero naive scale. Say
-that plainly; it's a real property of the data, not a gap in the analysis.
+undefined because the series does not move, so the naive scale is zero. That is a
+real property of the data, not a gap in the analysis.
 
 `aggregate_cpu_utilization`, one-shot holdout:
 
 | candidate | RMSE | MAE | MASE | skill vs best baseline |
 | --- | --- | --- | --- | --- |
 | `ma24` (best baseline) | 0.1537 | 0.1169 | 0.9652 | 0.0000 |
-| **submitted (persistence)** | **0.1848** | **0.1468** | **1.2119** | **−0.2024** |
+| **submitted (persistence)** | **0.1848** | **0.1468** | **1.2119** | **-0.2024** |
 
-**The baseline won.** Your submission is ~20% worse than a 24-step moving average
-on the holdout. This is the single most important thing to be able to explain, and
-the explanation is credible: on the training folds persistence was best
-(0.2123 vs 0.2927 for `ma24`), but with five overlapping origins the standard
-error was 0.0425 — wider than the gap between nearly every pair of candidates. The
+**The baseline won.** The submission is about 20% worse than a 24-step moving
+average on the holdout. This is the single most important thing to be able to
+explain, and the explanation is credible: on the training folds persistence was
+best (0.2123 vs 0.2927 for `ma24`), but with five overlapping origins the standard
+error was 0.0425, wider than the gap between nearly every pair of candidates. The
 fold ranking had no resolution. The holdout also drifted up slightly (mean 9.269
 vs 9.250 in the last training day), which favoured a 24-step average by luck.
 
@@ -98,18 +97,18 @@ zero misses below. The uncertainty statement was better than the point forecast.
 
 Provision at a quantile of the forecast band, with the cost asymmetry as an
 explicit parameter. At 8:1 under-provisioning cost, the newsvendor optimum is the
-88.9th percentile; the chosen operating level is 0.60 with a 3× widening on
+88.9th percentile; the chosen operating level is 0.60 with a 3x widening on
 under-covering empirical bands.
 
 On the holdout at level 0.60: 12 shortfall steps out of 24, mean
 over-provisioning 0.048 pp, net cost 0.611 per step. The sensitivity table shows
-the optimum moving from the 50th percentile at 1:1 to the 85th at 32:1 — there is
-no universal headroom rule, only the one your cost structure implies.
+the optimum moving from the 50th percentile at 1:1 to the 85th at 32:1. There is
+no universal headroom rule, only the one the cost structure implies.
 
-Crucially: **the aggregate mean is not tail risk.** The mean is 9.41% while the
-cross-VM P95 is 37.55% and the max is 99.30%. Two machines sit above 90% for about
-0.9% of readings. Any plan built on the aggregate alone under-provisions the
-machines that matter.
+**The aggregate mean is not tail risk.** The mean is 9.41% while the
+cross-VM P95 is 37.55% and the max is 99.30%. About 0.9% of readings sit above
+90%. Any plan built on the aggregate alone under-provisions the machines that
+matter.
 
 ---
 
@@ -133,7 +132,7 @@ machines that matter.
 1. **The baseline won.** Expected as a possibility, still the headline. Handled by
    reporting it, not by hiding it.
 2. **The empirical intervals under-covered badly.** Nominal 90% measured 0.558
-   across leave-one-origin-out. Fixed by widening 3× (measured 0.933), documented
+   across leave-one-origin-out. Fixed by widening 3x (measured 0.933), documented
    with the full calibration table so the choice is auditable.
 3. **MASE is undefined for the count.** A zero naive scale. Reported as undefined;
    an unqualified zero would have looked like a perfect model.
@@ -143,60 +142,61 @@ machines that matter.
 5. **Two of my own test assumptions were wrong.** I guessed the signature of
    `build_matrix` and `skill_score`, and initially expected the CLI to reject an
    oversized holdout when it actually shrinks with a warning. The code was right
-   and the tests were wrong — which is the tests doing their job, but worth
-   knowing so you don't "fix" correct code.
+   and the tests were wrong, which is the tests doing their job, but worth
+   knowing so correct code does not get "fixed".
 
 ---
 
 ## Known weaknesses a skeptical reviewer will flag
 
-- **The model lost to the baseline.** Have the explanation ready (§ above) and do
-  not pretend it didn't happen.
+- **The model lost to the baseline.** Have the explanation ready and do not
+  pretend it did not happen.
 - **One holdout window.** A single 24-step evaluation cannot settle a ranking.
-  Say so before you're asked.
+  State it before being asked.
 - **Five origins.** The standard errors are large; treat all fold rankings as
   soft.
-- **The count is constant.** It's a property of a rectangular release slice, not
-  of Azure. Don't claim you modelled churn — you didn't, because there was none
-  to model.
-- **The 3× widening factor** is calibrated on the same five origins used for
-  selection. Optimistic. Stated in D014.
+- **The count is constant.** It is a property of a rectangular release slice, not
+  of Azure. The churn modelling was not done because there was no churn to model.
+- **The 3x widening factor** is calibrated on the same five origins used for
+  selection, so it is optimistic. Stated in D014.
 - **The peak trigger never fired** on the holdout because no step crossed the
   training peak threshold. Correct behaviour, untested behaviour.
 - **Length of the window.** 9.2 hours cannot support any claim about daily or
-  weekly cycles. Don't make one.
+  weekly cycles.
 
 ---
 
-## Checklist before you submit
+## Verification checklist
 
 Read:
 
-- [ ] `reports/final_report.md` — all of it. You must be able to say every number.
-- [ ] `docs/protocol.md` — it is your defence against "did you tune on the
-      holdout?"
-- [ ] `docs/feature_audit.md` — know *why* `p95_max_cpu` is banned.
-- [ ] `docs/interview/` — start with `00_how_to_use.md`.
+- [ ] `reports/final_report.md`, all of it. Every number should be sayable from
+      memory or recoverable from the artifact it cites.
+- [ ] `docs/protocol.md`, the defence against "did you tune on the holdout?".
+- [ ] `docs/feature_audit.md`, for *why* `p95_max_cpu` is banned.
 
 Run:
 
-- [ ] `python -m pytest tests` → 61 passed.
-- [ ] `python -m cwf.predict --data challenge_data --output predictions.csv` →
-      byte-identical to the committed file.
-- [ ] `python scripts/validate_submission.py predictions.csv` → OK.
-- [ ] `python scripts/build_notebooks.py --execute` → three notebooks, no errors.
-- [ ] One smoke dataset by hand (`python -c "from cwf.smoke import *; write_dataset(make_basic(), 'tmp_smoke')"` then predict on it).
+- [ ] `python -m pytest tests` gives 61 passed.
+- [ ] `python -m cwf.predict --data challenge_data --output predictions.csv`
+      reproduces the committed file byte for byte.
+- [ ] `python scripts/validate_submission.py predictions.csv` prints OK.
+- [ ] `python scripts/build_notebooks.py --execute` runs three notebooks with no
+      errors.
+- [ ] One smoke dataset by hand:
+      `python -c "from cwf.smoke import *; write_dataset(make_basic(), 'tmp_smoke')"`
+      then predict on it.
 
-Verify yourself:
+Verify independently:
 
 - [ ] Recompute one metric by hand from `predictions.csv` and the holdout truth.
-      Do not skip this — it is the fastest way to catch a misunderstanding.
-- [ ] Explain out loud, without notes, why the baseline won.
-- [ ] Explain out loud why `timestamp_vm_deleted` cannot be a feature.
+      It is the fastest way to catch a misunderstanding.
+- [ ] Explain without notes why the baseline won.
+- [ ] Explain why `timestamp_vm_deleted` cannot be a feature.
 
 ---
 
-## Claim → artifact map
+## Claim to artifact map
 
 | claim | artifact |
 | --- | --- |
@@ -205,21 +205,21 @@ Verify yourself:
 | Aggregate mean 9.41, std 0.19 | `target_summary_train.csv` |
 | No trend, stationarity on the boundary | `stationarity_trend.csv` |
 | ACF inside band by lag 11 | `acf_decay.csv` |
-| 83.6% between-VM variance | `movement_decomposition.csv` |
+| 83.6% between-VM variance | `composition_vs_load.csv` |
 | Mean 9.41 vs cross-VM P95 37.55 | `mean_hides_tails.csv` |
 | Top 1,000 VMs carry 43.5% | `load_concentration.csv` |
 | Peak threshold 9.6684 pp | `peak_threshold.json` |
-| Fold origins 60…84 | `validation_folds.csv` |
+| Fold origins 60 to 84 | `validation_folds.csv` |
 | Persistence best on folds (0.2123) | `validation_results.csv` |
 | Per-origin spread / standard errors | `validation_per_origin.csv` |
-| Alpha sweep | `validation_results.csv` + `docs/DECISIONS.md` D013 |
+| Alpha sweep | `validation_results.csv` and `docs/DECISIONS.md` D013 |
 | Frozen selection | `config/final_model.json` |
-| Holdout RMSE 0.1848, skill −0.2024 | `final_scores.csv` |
+| Holdout RMSE 0.1848, skill -0.2024 | `final_scores.csv` |
 | Holdout bias +0.1044 | `posthoc_summary.json` |
 | Interval coverage 0.833/0.833/0.917/0.917 | `posthoc_interval_coverage.csv` |
 | Zero holdout peaks | `posthoc_peak_vs_nonpeak.csv` |
 | Band widening chosen at 3.0 | `policy_choice.json`, `interval_calibration.csv` |
 | Policy holdout cost 0.611/step | `policy_holdout_evaluation.csv` |
-| Cost sensitivity 1:1 → 32:1 | `policy_holdout_sensitivity.csv` |
-| Extra targets P95 3.99× mean | `extra_targets_train.csv` |
+| Cost sensitivity 1:1 to 32:1 | `policy_holdout_sensitivity.csv` |
+| Extra targets P95 3.99x mean | `extra_targets_train.csv` |
 | Zero churn over the full range | `posthoc_churn_context.csv` |

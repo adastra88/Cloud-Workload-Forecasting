@@ -12,12 +12,12 @@ the fold ranking carried much less information than the digits suggested. A
 
 What it means operationally: on a stationary, low-variance series with 110
 points, the honest deliverable is a well-documented simple baseline with
-calibrated uncertainty, not a complex model. The number to defend in an
-interview is not 0.1848 - it is that the protocol predicted this fragility in
-advance and was followed anyway.
+calibrated uncertainty, not a complex model. The number worth defending is not
+0.1848. It is that the protocol predicted this fragility in advance and was
+followed anyway.
 
 The post-hoc checks also matter. The calibrated 90% band covered 91.7% of the
 holdout with zero misses below, so the uncertainty statement held up even though
 the point forecast lost. And no holdout step breached the training peak
-threshold of 9.67 pp, so the peak-risk trigger never fired - correct behaviour,
-but with two hours of data we cannot claim it was tested.
+threshold of 9.67 pp, so the peak-risk trigger never fired. That is correct
+behaviour, but with two hours of data the trigger cannot be claimed as tested.

@@ -1,6 +1,6 @@
 """Target construction: ``active_vm_count`` and ``aggregate_cpu_utilization``.
 
-Contract (DATASET.md §4)
+Contract (upstream DATASET.md, target definitions section)
 ------------------------
 active_vm_count(t)          = #distinct vm_id with a valid CPU reading at t
 aggregate_cpu_utilization(t)= mean of VM-level avg_cpu at t, percentage [0, 100]

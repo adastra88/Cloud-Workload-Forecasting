@@ -10,7 +10,7 @@ cost-aware provisioning rule.
 
 ## 1. Executive summary
 
-I forecast two aggregate signals 24 steps ahead — two hours — from 9.2 hours of
+I forecast two aggregate signals 24 steps ahead, two hours, from 9.2 hours of
 training data: how many VMs are reporting (`active_vm_count`) and the mean CPU
 utilisation across them (`aggregate_cpu_utilization`).
 
@@ -25,14 +25,14 @@ forecast.
 
 **What I did.** Pre-registered a leakage protocol (`docs/protocol.md`) before
 running any model, audited every metadata column for leakage
-(`docs/feature_audit.md`), and evaluated nine candidates on five rolling-origin
+(`docs/feature_audit.md`), and evaluated ten candidates on five rolling-origin
 folds entirely inside the training window. The frozen selection rule chose
 **persistence** for both targets.
 
 **The honest result.** On the one-shot holdout, persistence scored RMSE 0.1848
 and MASE 1.2119. A 24-step moving average scored better: RMSE 0.1537, MASE
-0.9652, giving the submission a **skill score of −0.2024**. The baseline won. I
-did not retune — the protocol forbids it, and a result you only trust when it is
+0.9652, giving the submission a **skill score of -0.2024**. The baseline won. I
+did not retune. The protocol forbids it, and a result you only trust when it is
 favourable is not a result. The fold evidence was too noisy to rank the
 candidates: the standard error across origins was 0.0425 on an RMSE of 0.2123,
 wider than the gap between almost every pair.
@@ -47,7 +47,7 @@ behaves sensibly across the cost-asymmetry range.
 | --- | --- | --- |
 | submitted holdout RMSE (aggregate CPU) | 0.1848 | `final_scores.csv` |
 | best baseline holdout RMSE (`ma24`) | 0.1537 | `final_scores.csv` |
-| skill score vs best baseline | −0.2024 | `final_scores.csv` |
+| skill score vs best baseline | -0.2024 | `final_scores.csv` |
 | holdout coverage at nominal 90% | 0.9167 | `posthoc_interval_coverage.csv` |
 | aggregate mean vs cross-VM P95 | 9.41 pp vs 37.55 pp | `mean_hides_tails.csv` |
 
@@ -77,10 +77,10 @@ every timestamp. Source: `reports/artifacts/structure_checks.csv`.
 
 ### 2.2 Target definitions
 
-- `active_vm_count(t)` — distinct `vm_id` with a valid reading at `t`. "Valid"
+- `active_vm_count(t)`: distinct `vm_id` with a valid reading at `t`. "Valid"
   means `avg_cpu` finite and in [0, 100]. Each VM counted at most once per
   timestamp.
-- `aggregate_cpu_utilization(t)` — mean of VM-level `avg_cpu` at `t`. Missing
+- `aggregate_cpu_utilization(t)`: mean of VM-level `avg_cpu` at `t`. Missing
   readings are **excluded from the mean, never zero-filled**, because a VM with
   no reading is not a VM using zero CPU.
 
@@ -101,7 +101,7 @@ Every number in this section comes from the 110 training timestamps.
 ### 3.1 The count is constant
 
 `active_vm_count` is 10,000 at all 110 training timestamps, standard deviation
-exactly 0. Zero VMs are created or deleted inside the window. **Operationally:**
+exactly 0. Zero VMs are created or deleted inside the window. Operationally:
 there is no churn to model in this slice, and any scale-free metric for this
 target divides by zero. MASE is reported as undefined rather than as a number
 that would look impressive and mean nothing.
@@ -113,36 +113,36 @@ that would look impressive and mean nothing.
 | mean | 9.4141 pp |
 | std | 0.1936 pp |
 | min / max | 9.1116 / 9.9122 pp |
-| trend slope | −0.0127 pp per hour (t = −1.31) |
+| trend slope | -0.0127 pp per hour (t = -1.31) |
 | ADF p-value | 0.413 |
 | KPSS p-value | 0.100 |
-| ACF lag 1 / 12 / 24 | 0.662 / 0.327 / −0.020 |
-| first lag inside 95% band | 11 (≈55 minutes) |
+| ACF lag 1 / 12 / 24 | 0.662 / 0.327 / -0.020 |
+| first lag inside 95% band | 11 (about 55 minutes) |
 
-ADF fails to reject a unit root and KPSS fails to reject stationarity at 10% —
+ADF fails to reject a unit root and KPSS fails to reject stationarity at 10%;
 the series sits near the boundary, i.e. persistent but not trending. With 9.2
 hours there is **no daily or weekly cycle to estimate**; claiming one would be
-fitted noise. **Operationally:** last-value and short-average forecasts are both
+fitted noise. Operationally: last-value and short-average forecasts are both
 defensible and neither will be much better than the other. This predicts the
-result we got.
+result in section 6.
 
 ### 3.3 The mean hides the tail
 
 | statistic | value |
 | --- | --- |
 | aggregate mean | 9.41 pp |
-| cross-VM P95 of `avg_cpu` | 37.55 pp (4.0× the mean) |
+| cross-VM P95 of `avg_cpu` | 37.55 pp (4.0x the mean) |
 | cross-VM P99 | 87.27 pp |
 | cross-VM max | 99.30 pp |
-| readings ≥ 80% | 1.272% |
-| readings ≥ 90% | 0.878% |
+| readings at or above 80% | 1.272% |
+| readings at or above 90% | 0.878% |
 
 Per-VM mean distribution: p05 0.94, median 5.50, p90 19.74, p99 79.62 pp. Load
-is concentrated — the top 1,000 VMs (10% of the fleet) carry 43.5% of total
-utilisation. **Operationally:** a capacity plan driven off the aggregate mean
+is concentrated: the top 1,000 VMs (10% of the fleet) carry 43.5% of total
+utilisation. Operationally, a capacity plan driven off the aggregate mean
 under-provisions exactly the machines that are about to saturate. This is the
 single most important caveat in the whole analysis and it is why the extension
-targets exist (§7).
+targets exist (section 7).
 
 ### 3.4 Composition versus genuine load change
 
@@ -156,10 +156,11 @@ Variance decomposition of per-VM utilisation:
 
 When the aggregate moves, **100% of the movement is within-VM** (correlation
 between aggregate change and within-VM change: 1.0; std 0.158 pp). There is no
-composition effect at all, because no VM enters or leaves. **Operationally:**
-there is no "the fleet got busier" signal — the aggregate moves because many
+composition effect at all, because no VM enters or leaves. Operationally there
+is no "the fleet got busier" signal; the aggregate moves because many
 independent machines wobble slightly in the same small way. That is close to
-unpredictable by construction, and it is the mechanism behind the result in §6.
+unpredictable by construction, and it is the mechanism behind the result in
+section 6.
 
 ### 3.5 Segments
 
@@ -170,10 +171,10 @@ unpredictable by construction, and it is the mechanism behind the result in §6.
 | Delay-insensitive | 8.26 | 6,180 |
 
 Deployment size matters more: single-VM deployments average 6.41 pp, deployments
-of nine or more average 10.95 pp. **Operationally:** if you must plan per
-segment, segment by deployment size, not by category — the spread across
-deployment sizes (4.5 pp) is comparable to the spread across categories (3.3 pp)
-and the largest deployments behave quite differently from singletons.
+of nine or more average 10.95 pp. Operationally, if you must plan per segment,
+segment by deployment size rather than by category: the spread across deployment
+sizes (4.5 pp) is larger than the spread across categories (3.3 pp) and the
+largest deployments behave quite differently from singletons.
 Segment profiles are recomputed from training-window readings, never from the
 metadata lifetime statistics.
 
@@ -194,12 +195,12 @@ lifetime from censored data.
 
 ### 4.1 Candidates
 
-Nine, all evaluated on the identical folds:
+Ten, all evaluated on the identical folds:
 
 - baselines: persistence, moving average (6/12/24), drift, seasonal naive (12)
 - statistical: Holt, damped-trend ETS
 - regularised regression: direct multi-horizon ridge on origin-safe lag and
-  rolling features, alpha swept 0.1→1000
+  rolling features, alpha swept from 0.1 to 1000
 - gradient boosting: direct multi-horizon, small trees, heavy regularisation
 
 Direct multi-horizon means one model per horizon step (or a pooled model with
@@ -236,15 +237,16 @@ undefined. Selected by simplicity: persistence.
 | ridge_direct | 0.2884 | 0.2587 | 2.0524 | 0.0048 |
 | ma24 | 0.2927 | 0.2709 | 2.1495 | 0.0300 |
 | ets_holt | 0.2953 | 0.2605 | 2.0670 | 0.0730 |
+| seasonal_naive12 | 0.2956 | 0.2631 | 2.0874 | 0.0530 |
 
 Persistence, drift and GBM are within one standard error of the best; the rule
 breaks the tie toward persistence.
 
-Ridge was swept over alpha ∈ {0.1, 1, 10, 100, 1000}: best RMSE 0.2615 at
+Ridge was swept over alpha in {0.1, 1, 10, 100, 1000}: best RMSE 0.2615 at
 alpha = 0.1, still worse than persistence. The sweep is reported so a reviewer
 can check that regularisation strength is not the reason the model lost.
 
-**Noon claim we do not make:** GBM at 0.2209 versus persistence at 0.2123 is not
+**A claim we do not make:** GBM at 0.2209 versus persistence at 0.2123 is not
 "GBM is worse". It is inside the noise band. The honest statement is that on this
 evidence nothing beats a naive forecast, and the rule prefers the simpler thing
 when it cannot tell them apart.
@@ -289,10 +291,10 @@ undefined.
 | candidate | RMSE | MAE | MASE | skill vs best baseline |
 | --- | --- | --- | --- | --- |
 | ma24 (best baseline) | 0.1537 | 0.1169 | 0.9652 | 0.0000 |
-| ma12 | 0.1613 | 0.1230 | 1.0156 | −0.0494 |
-| ma6 | 0.1713 | 0.1336 | 1.1028 | −0.1146 |
-| **submitted (persistence)** | **0.1848** | **0.1468** | **1.2119** | **−0.2024** |
-| drift | 0.2101 | 0.1705 | 1.4079 | −0.3669 |
+| ma12 | 0.1613 | 0.1230 | 1.0156 | -0.0494 |
+| ma6 | 0.1713 | 0.1336 | 1.1028 | -0.1146 |
+| **submitted (persistence)** | **0.1848** | **0.1468** | **1.2119** | **-0.2024** |
+| drift | 0.2101 | 0.1705 | 1.4079 | -0.3669 |
 
 The submission is 20.2% worse than the best baseline on RMSE. Source:
 `reports/artifacts/final_scores.csv`.
@@ -303,21 +305,21 @@ Three things, in order of importance:
 
 1. **The fold evidence had no resolution.** Five overlapping origins give
    roughly 13 correlated evaluations of a 24-step horizon. The standard error
-   across origins was 0.0425 on an RMSE of 0.2123 — a 20% relative uncertainty.
+   across origins was 0.0425 on an RMSE of 0.2123, a 20% relative uncertainty.
    Any ranking inside that band was a coin flip.
 2. **The holdout drifted slightly upward.** Holdout mean 9.269 pp versus the
    training mean 9.414 pp and the last-24-training mean 9.250 pp. A 24-step
-   average sits near 9.2-9.3; a single last observation sat at 9.1646. `ma24`
-   landed closer by luck, not skill — it had no information persistence lacked.
+   average sits near 9.2 to 9.3; a single last observation sat at 9.1646. `ma24`
+   landed closer by luck, not skill: it had no information persistence lacked.
 3. **The series is nearly unpredictable anyway.** With 0.018% common-time
    variance there is no shared signal to extract. Every candidate was guessing
    the same small wobble.
 
 The pre-registered rule was followed. Changing the model after seeing the
-holdout would have made the reported number meaningless — it would have been a
-choice made with knowledge of the answer.
+holdout would have made the reported number meaningless, because it would have
+been a choice made with knowledge of the answer.
 
-### 6.3 Post-hoc analysis (labelled — does not change the submission)
+### 6.3 Post-hoc analysis (labelled, does not change the submission)
 
 - **Bias.** Mean actual 9.2690, mean predicted 9.1646, bias +0.1044 pp.
   The forecast was systematically low, consistent with an upward drift in the
@@ -327,15 +329,15 @@ choice made with knowledge of the answer.
   profile is the signature of a random walk; it is more evidence that nothing
   exploitable was there.
 - **Peaks.** Zero holdout steps exceeded the training peak threshold of
-  9.6684 pp (holdout max 9.6360). The peak-risk trigger never fired — correct
-  behaviour, but with two hours of data and no peak events we cannot claim the
-  trigger was tested.
-- **Intervals.** Nominal 50/80/90/95 → measured 0.833/0.833/0.917/0.917. All
+  9.6684 pp (holdout max 9.6360). The peak-risk trigger never fired. That is
+  correct behaviour, but with two hours of data and no peak events we cannot
+  claim the trigger was tested.
+- **Intervals.** Nominal 50/80/90/95 gave measured 0.833/0.833/0.917/0.917. All
   misses are above the band, zero below, consistent with the +0.10 bias. Widths
   0.916/0.916/1.062/1.062 pp.
 - **Churn.** Zero creations and zero deletions across the full 134-timestamp
   range, so no churn-event analysis is possible; this is now stated as a fact
-  rather than a censoring assumption.
+  rather than as a censoring assumption.
 
 ---
 
@@ -383,7 +385,7 @@ Net cost per step by cost ratio (`policy_holdout_sensitivity.csv`):
 | 32:1 | 4.041 | 2.300 | 1.214 | 0.455 | 0.299 | 0.309 |
 
 The optimum moves from the 50th percentile at 1:1 to the 85th at 32:1. **There is
-no universal headroom percentage** — there is only the percentage your cost
+no universal headroom percentage**; there is only the percentage your cost
 structure implies. Presenting the table is more useful than presenting one number.
 
 ### 7.4 Mean is not tail risk
@@ -394,11 +396,11 @@ a one-off:
 
 | extra target | train mean | correlation with aggregate | ratio to aggregate |
 | --- | --- | --- | --- |
-| `share_hot_vms` (share above 19.69 pp) | 0.1000 | 0.882 | — |
-| `cross_vm_p95_avg_cpu` | 37.547 | 0.858 | 3.99× |
-| `aggregate_max_cpu` | 18.441 | 0.940 | 1.96× |
+| `share_hot_vms` (share above 19.69 pp) | 0.1000 | 0.882 | n/a |
+| `cross_vm_p95_avg_cpu` | 37.547 | 0.858 | 3.99x |
+| `aggregate_max_cpu` | 18.441 | 0.940 | 1.96x |
 
-**Operationally:** forecast the aggregate for total capacity, but plan per-VM
+Operationally, forecast the aggregate for total capacity, but plan per-VM
 headroom from the P95/P99 series, and keep a per-VM ceiling rule. When the band
 is wide, the correct action is to hold headroom and shorten the replanning
 interval, not to trust the point forecast more.
@@ -409,16 +411,16 @@ interval, not to trust the point forecast more.
 
 1. **9.2 hours of training data, one window.** No daily or weekly seasonality can
    be identified, and one holdout window cannot establish a stable ranking.
-   The result in §6 is a single draw from a noisy comparison.
-2. **The count is constant by construction.** The interesting question — how do
-   arrivals and departures move the fleet size — cannot be answered from a
+   The result in section 6 is a single draw from a noisy comparison.
+2. **The count is constant by construction.** The interesting question, how
+   arrivals and departures move the fleet size, cannot be answered from a
    rectangular slice. The code handles varying counts; the data does not
    exercise it.
 3. **Composition effects are exactly zero here** and will not be zero in
    production, where VMs arrive and leave mid-window. The decomposition code is
    general; the data simply has no composition to decompose.
-4. **The mean hides the tail.** Covered in §7.4, but it is the limitation most
-   likely to bite an operator who reads only the aggregate.
+4. **The mean hides the tail.** Covered in section 7.4, but it is the limitation
+   most likely to bite an operator who reads only the aggregate.
 5. **Churn is right-censored** at the training end for any lifetime analysis, and
    in this release there are no deletions at all in the observed range.
 6. **The interval widening factor (3.0) is calibrated on five origins** and is
@@ -441,9 +443,9 @@ there are enough origins for it to mean something.
 
 | figure | operational takeaway |
 | --- | --- |
-| `fig01_aggregate_cpu_train.png` | The aggregate wanders within a 0.8 pp band with no trend — plan for a stable level, not a growth curve. |
+| `fig01_aggregate_cpu_train.png` | The aggregate wanders within a 0.8 pp band with no trend: plan for a stable level, not a growth curve. |
 | `fig02_vm_mean_hist.png` | Per-VM means are bimodal and heavy on near-idle machines; a fleet-wide average describes almost no individual VM. |
-| `fig03_segments_category.png` | Interactive VMs run ~40% hotter than delay-insensitive ones; segment-level headroom differs even when the aggregate does not. |
+| `fig03_segments_category.png` | Interactive VMs run about 40% hotter than delay-insensitive ones; segment-level headroom differs even when the aggregate does not. |
 
 All numbers in this report are generated by the scripts in `scripts/` and stored
 in `reports/artifacts/`. Nothing here is estimated by hand.
