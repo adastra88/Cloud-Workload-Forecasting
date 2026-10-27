@@ -105,6 +105,16 @@ over-provisioning 0.048 pp, net cost 0.611 per step. The sensitivity table shows
 the optimum moving from the 50th percentile at 1:1 to the 85th at 32:1. There is
 no universal headroom rule, only the one the cost structure implies.
 
+One number in that paragraph looks like a contradiction and is not. On the
+*holdout* at 8:1, level 0.80 costs 0.246 per step against 0.611 at 0.60, so 0.80
+looks better. The level was not chosen on the holdout: on the 120 rolling-origin
+fold steps, 0.60 is the cheapest at 0.2835 and 0.80 costs 0.4178, nearly 50%
+more. The two samples differ mostly in band width. Raising the level from 0.60 to
+0.80 costs 0.184 pp of over-provisioning on the folds (0.232 to 0.416) but only
+0.128 pp on the holdout (0.048 to 0.176), because the widened fold bands are much
+wider to begin with, so extra margin is expensive there and cheap on the holdout.
+Switching to 0.80 would mean choosing the margin after seeing the answer.
+
 **The aggregate mean is not tail risk.** The mean is 9.41% while the
 cross-VM P95 is 37.55% and the max is 99.30%. About 0.9% of readings sit above
 90%. Any plan built on the aggregate alone under-provisions the machines that

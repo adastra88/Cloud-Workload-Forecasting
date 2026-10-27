@@ -149,7 +149,7 @@ def main(argv=None) -> int:
         fold_payload.append({"forecast": fwd, "lower": lo, "upper": hi, "realised": np.asarray(f.y_true, float)})
 
     best_level, policy_rows = P.choose_level(fold_payload, c_under=args.c_under, c_over=args.c_over)
-    pd.DataFrame(policy_rows).assign(chosen=False).to_csv(ART / "policy_selection.csv", index=False)
+    pd.DataFrame(policy_rows).assign(chosen=lambda d: d["level"] == best_level).to_csv(ART / "policy_selection.csv", index=False)
 
     prov_by_level = {level: P.level_to_band(np.concatenate([f["forecast"] for f in fold_payload]),
                                             np.concatenate([f["lower"] for f in fold_payload]),
@@ -157,6 +157,7 @@ def main(argv=None) -> int:
                      for level in P.DEFAULT_LEVELS}
     realised = np.concatenate([f["realised"] for f in fold_payload])
     sens = pd.DataFrame(P.sensitivity(prov_by_level, realised))
+    sens = sens.sort_values(["cost_ratio", "level"]).reset_index(drop=True)
     sens.to_csv(ART / "policy_sensitivity.csv", index=False)
 
     bench_width = float(np.median(np.abs(np.diff(values)))) if values.size > 1 else 0.0

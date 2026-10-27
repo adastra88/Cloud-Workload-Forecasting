@@ -360,6 +360,16 @@ coverage to 0.933. The chosen operating level is 0.60, and a peak-risk trigger
 adds headroom when the band's implied probability of a peak step exceeds a
 threshold.
 
+The level is selected on the rolling-origin folds, not on the holdout
+(`policy_selection.csv`). At 8:1 over the 120 fold steps the net cost per step is
+0.3275 at level 0.50, **0.2835 at 0.60**, 0.3232 at 0.70 and 0.4178 at 0.80, so
+0.60 is the fold optimum and 0.80 is nearly 50% more expensive there. The
+holdout table in section 7.3 is a different 24 steps, and on those steps the
+ordering reverses: 0.80 costs 0.246 against 0.611 at 0.60. Section 7.3 is a
+post-hoc sensitivity table, not the selection rule. Choosing 0.80 would have
+meant picking the margin after seeing the answer, which is the same error as
+retuning the model.
+
 ### 7.2 Holdout evaluation (one shot)
 
 At the chosen level 0.60 and an 8:1 cost ratio: **12 shortfall steps out of 24**,
@@ -372,9 +382,13 @@ slightly low, being short on about half the steps is the expected consequence of
 choosing a below-median level. An operator who genuinely cannot tolerate
 shortfall should provision at 0.85 or 0.95 and pay for it.
 
-### 7.3 Cost sensitivity
+### 7.3 Cost sensitivity (post-hoc on the holdout)
 
-Net cost per step by cost ratio (`policy_holdout_sensitivity.csv`):
+Net cost per step by cost ratio (`policy_holdout_sensitivity.csv`). The level is
+fixed at 0.60 from the folds; what varies here is the cost ratio, which is a
+*what-if* on an assumption we do not control. Read the row for your own ratio to
+see what the margin should have been, and note that these costs include the
+benefit of hindsight in the sense that the realised holdout is now known.
 
 | `c_under : c_over` | 0.50 | 0.60 | 0.70 | 0.80 | 0.85 | 0.90 |
 | --- | --- | --- | --- | --- | --- | --- |
